@@ -21,4 +21,4 @@ ovDemo = gr.Interface(
     ],
 )
 
-ovDemo.launch()
+ovDemo.launch(share=True)
