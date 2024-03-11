@@ -1,19 +1,24 @@
+import gradio as gr
 from ovcontrolnet_tools import *
 
-if __name__ == "__main__":
-    # Example usage
-    from diffusers.utils import load_image
+IRConversion()
+ov_pipe = getOVPipe()
+negative_prompt = "monochrome, lowres, bad anatomy, worst quality, low quality"
 
-    original = load_image(
-        "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/diffusers/person.png"
-    )
 
-    IRConversion()
-    pose = pose_estimator(original)
+def ovControlNet(image, prompt):
+    pose = pose_estimator(image)
+    result = ov_pipe(prompt, pose, 20, negative_prompt=negative_prompt)[0]
+    return result, pose
 
-    prompt = "Dancing Darth Vader, best quality, extremely detailed"
-    negative_prompt = "monochrome, lowres, bad anatomy, worst quality, low quality"
 
-    ov_pipe = getOVPipe()
-    result = ov_pipe(prompt, pose, 20, negative_prompt=negative_prompt)
-    make_results(original, pose, result[0])
+ovDemo = gr.Interface(
+    fn=ovControlNet,
+    inputs=[gr.Image(width=512, height=512, type="numpy"), gr.Textbox(label="Prompt")],
+    outputs=[
+        gr.Image(label="Generated Image", type="numpy", show_label=True),
+        gr.Image(label="Pose Estimation", type="numpy", show_label=True),
+    ],
+)
+
+ovDemo.launch()
